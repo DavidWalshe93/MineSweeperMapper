@@ -6,13 +6,43 @@ Date:       27 September 2020
 # Core Libs
 from typing import Tuple
 import logging
+from time import perf_counter_ns
 
 # 3rd Party
 import numpy as np
 
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+
+def timeit(func: callable):
+    """
+    Simple timer function to record performance in nanoseconds.
+    """
+    def wrapper(*args, **kwargs):
+        start = perf_counter_ns()
+        res = func(*arg, **kwargs)
+        end = perf_counter_ns()
+        logger.info(f"{func.__name__} took {end - start}ns.")
+
+        return res
+
+    return wrapper
+
+
+# ===========================================================================================
+# "parse_in" functions.
+# ===========================================================================================
+
+def parse_in(input_file: str):
+    """
+    Reads an input file and returns a tuple of (num_rows, num_columns, matrix).
+
+    :param input_file: The file to read data from.
+    :return: A 3-element tuple of (num_rows, num_columns, matrix).
+    """
+    with open(input_file, "r") as fh:
+        print(read_dimensions(fh.readline()))
 
 
 def read_dimensions(line: str) -> Tuple[int, int]:
@@ -31,23 +61,40 @@ def read_dimensions(line: str) -> Tuple[int, int]:
         logger.error(f"Cannot parse N & M from first line of input file. \n{e.__str__()}")
 
 
-def parse_in(input_file: str) :
+def read_matrix(N: int, M: int, lines: str) -> np.array:
     """
-    Reads an input file and returns a tuple of (num_rows, num_columns, matrix).
+    Converts the input file data into a numpy array.
 
-    :param input_file: The file to read data from.
-    :return: A 3-element tuple of (num_rows, num_columns, matrix).
+
+    :param N: The height of the input matrix.
+    :param M: The width of the input matrix.
+    :param lines: The textual data containing the array.
+    :return: The data as an numpy array.
     """
-    with open(input_file, "r") as fh:
-        print(read_dimensions(fh.readline()))
+    np.empty((N, M), dtype=str)
 
+
+
+# ===========================================================================================
+# "solve" functions.
+# ===========================================================================================
 
 def solve():
     pass
 
 
+# ===========================================================================================
+# "parse_out" functions.
+# ===========================================================================================
+
+
 def parse_out():
     pass
+
+
+# ===========================================================================================
+# "main" functions.
+# ===========================================================================================
 
 
 def main():
