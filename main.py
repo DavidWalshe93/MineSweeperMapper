@@ -57,7 +57,7 @@ def read_dimensions(line: str) -> Tuple[int, int]:
     try:
         N, M = line.strip().split(" ")
 
-        return N, M
+        return int(N), int(M)
 
     except Exception as e:
         logger.error(f"Cannot parse N & M from first line of input file. \n{e.__str__()}")
@@ -74,7 +74,7 @@ def read_matrix(N: int, M: int, lines: str) -> np.array:
     :param lines: The textual data containing the array.
     :return: The data as an numpy array.
     """
-    np.empty((N, M), dtype=str)
+    np.empty((N, M))
 
 
 
