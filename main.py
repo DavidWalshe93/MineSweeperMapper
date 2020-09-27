@@ -103,8 +103,48 @@ def read_matrix(N: int, M: int, string_matrix: str) -> np.array:
 # "solve" functions.
 # ===========================================================================================
 
-def solve():
-    pass
+@timeit(stage_name="Solve")
+def solve(num_rows: int, num_columns: int, matrix: np.array):
+    """
+    Solves the minefield plotting from a given input matrix, matrix.
+
+    :param num_rows: The number of row in the matrix.
+    :param num_columns: The number of columns in the matrix.
+    :param matrix: The matrix to process.
+    :return: The Matrix mapping output.
+    """
+
+    # Create empty minefield for population.
+    matrix_sol = np.full((num_rows, num_columns), fill_value="0", dtype=str)
+
+    x_locations, y_locations = np.where(matrix == "y")
+
+    # If there is no mines return empty matrix.
+    if x_locations is not None and y_locations is not None:
+
+        for x, y in zip(x_locations, y_locations):
+            # Mark Mine
+            matrix_sol[x, y] = "x"
+
+            # For each surrounding mine column.
+            for i in range(x-1, x+2):
+                # Check within X-axis bounds.
+                if 0 <= i < num_rows:
+                    # For each surrounding mine row.
+                    for j in range(y-1, y+2):
+                        # Check within Y-axis bounds
+                        if 0 <= j < num_columns:
+                            # Obtain current item value to update.
+                            current_value = matrix_sol[i, j]
+                            # Only update if the item is not a mine.
+                            if current_value != "x":
+                                # Convert to a int for addition.
+                                current_value = int(current_value)
+                                current_value += 1
+                                # Reassign updated value.
+                                matrix_sol[i, j] = current_value
+
+    return matrix_sol
 
 
 # ===========================================================================================
@@ -122,7 +162,8 @@ def parse_out():
 
 
 def main():
-    parse_in("./input/input_1.txt")
+    N, M, matrix = parse_in("./input/input_1.txt")
+    matrix_sol = solve(N, M, matrix)
 
 
 if __name__ == '__main__':
