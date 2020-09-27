@@ -6,34 +6,49 @@ Date:       27 September 2020
 # Core Libs
 from typing import Tuple
 import logging
+import logging.config
 from time import perf_counter_ns
 
 # 3rd Party
 import numpy as np
 
+logging.basicConfig(level=logging.INFO,
+                    format="%(levelname)s - %(message)s")
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def timeit(func: callable):
+def timeit(stage_name: str = None):
     """
     Simple timer function to record performance in nanoseconds.
+
+    :param stage_name: Mark the beginning of a stage.
     """
-    def wrapper(*args, **kwargs):
-        start = perf_counter_ns()
-        res = func(*args, **kwargs)
-        end = perf_counter_ns()
-        logger.info(f"{func.__name__} took {end - start}ns.")
+    def _timeit(func: callable):
 
-        return res
+        def wrapper(*args, **kwargs):
+            if stage_name is not None:
+                logger.info(f"====================================")
+                logger.info(f"Stage: {stage_name}")
+                logger.info(f"====================================")
+            start = perf_counter_ns()
+            res = func(*args, **kwargs)
+            end = perf_counter_ns()
+            logger.info(f"{func.__name__} took {end - start}ns.")
 
-    return wrapper
+            return res
+
+        return wrapper
+
+    return _timeit
 
 
 # ===========================================================================================
 # "parse_in" functions.
 # ===========================================================================================
 
+@timeit("Parse In")
 def parse_in(input_file: str):
     """
     Reads an input file and returns a tuple of (num_rows, num_columns, matrix).
@@ -42,11 +57,14 @@ def parse_in(input_file: str):
     :return: A 3-element tuple of (num_rows, num_columns, matrix).
     """
     with open(input_file, "r") as fh:
-        N, M = read_dimensions(fh.readline())
+        num_rows, num_columns = read_dimensions(fh.readline())
         string_matrix = fh.read()
-        read_matrix(N, M, string_matrix)
+        matrix = read_matrix(num_rows, num_columns, string_matrix)
+
+        return num_rows, num_columns, matrix
 
 
+@timeit()
 def read_dimensions(line: str) -> Tuple[int, int]:
     """
     Reads the size of the minefield array from the passed line (first_line).
@@ -63,19 +81,22 @@ def read_dimensions(line: str) -> Tuple[int, int]:
         logger.error(f"Cannot parse N & M from first line of input file. \n{e.__str__()}")
 
 
-@timeit
-def read_matrix(N: int, M: int, lines: str) -> np.array:
+@timeit()
+def read_matrix(N: int, M: int, string_matrix: str) -> np.array:
     """
     Converts the input file data into a numpy array.
 
 
     :param N: The height of the input matrix.
     :param M: The width of the input matrix.
-    :param lines: The textual data containing the array.
+    :param string_matrix: The textual data containing the array.
     :return: The data as an numpy array.
     """
-    np.empty((N, M))
+    items = string_matrix.strip().replace("\n", " ").split(" ")
+    matrix = np.array(items)
 
+    # Reshape the array into the desired size.
+    return matrix.reshape((N, M))
 
 
 # ===========================================================================================
