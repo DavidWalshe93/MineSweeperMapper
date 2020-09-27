@@ -21,7 +21,7 @@ def timeit(func: callable):
     """
     def wrapper(*args, **kwargs):
         start = perf_counter_ns()
-        res = func(*arg, **kwargs)
+        res = func(*args, **kwargs)
         end = perf_counter_ns()
         logger.info(f"{func.__name__} took {end - start}ns.")
 
@@ -42,7 +42,9 @@ def parse_in(input_file: str):
     :return: A 3-element tuple of (num_rows, num_columns, matrix).
     """
     with open(input_file, "r") as fh:
-        print(read_dimensions(fh.readline()))
+        N, M = read_dimensions(fh.readline())
+        string_matrix = fh.read()
+        read_matrix(N, M, string_matrix)
 
 
 def read_dimensions(line: str) -> Tuple[int, int]:
@@ -61,6 +63,7 @@ def read_dimensions(line: str) -> Tuple[int, int]:
         logger.error(f"Cannot parse N & M from first line of input file. \n{e.__str__()}")
 
 
+@timeit
 def read_matrix(N: int, M: int, lines: str) -> np.array:
     """
     Converts the input file data into a numpy array.
