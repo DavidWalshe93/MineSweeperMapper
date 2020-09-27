@@ -29,6 +29,7 @@ def timeit(stage_name: str = None):
 
         def wrapper(*args, **kwargs):
             if stage_name is not None:
+                logger.info(f"")
                 logger.info(f"====================================")
                 logger.info(f"Stage: {stage_name}")
                 logger.info(f"====================================")
@@ -104,7 +105,7 @@ def read_matrix(N: int, M: int, string_matrix: str) -> np.array:
 # ===========================================================================================
 
 @timeit(stage_name="Solve")
-def solve(num_rows: int, num_columns: int, matrix: np.array):
+def solve(num_rows: int, num_columns: int, matrix: np.array) -> np.array:
     """
     Solves the minefield plotting from a given input matrix, matrix.
 
@@ -113,18 +114,17 @@ def solve(num_rows: int, num_columns: int, matrix: np.array):
     :param matrix: The matrix to process.
     :return: The Matrix mapping output.
     """
-
     # Create empty minefield for population.
-    matrix_sol = np.full((num_rows, num_columns), fill_value="0", dtype=str)
+    sol_matrix = np.full((num_rows, num_columns), fill_value="0", dtype=str)
 
-    x_locations, y_locations = np.where(matrix == "y")
+    x_locations, y_locations = np.where(matrix == "x")
 
     # If there is no mines return empty matrix.
     if x_locations is not None and y_locations is not None:
 
         for x, y in zip(x_locations, y_locations):
             # Mark Mine
-            matrix_sol[x, y] = "x"
+            sol_matrix[x, y] = "x"
 
             # For each surrounding mine column.
             for i in range(x-1, x+2):
@@ -135,25 +135,32 @@ def solve(num_rows: int, num_columns: int, matrix: np.array):
                         # Check within Y-axis bounds
                         if 0 <= j < num_columns:
                             # Obtain current item value to update.
-                            current_value = matrix_sol[i, j]
+                            current_value = sol_matrix[i, j]
                             # Only update if the item is not a mine.
                             if current_value != "x":
                                 # Convert to a int for addition.
                                 current_value = int(current_value)
                                 current_value += 1
                                 # Reassign updated value.
-                                matrix_sol[i, j] = current_value
+                                sol_matrix[i, j] = current_value
 
-    return matrix_sol
+    return sol_matrix
 
 
 # ===========================================================================================
 # "parse_out" functions.
 # ===========================================================================================
 
+@timeit("Parse Out")
+def parse_out(num_rows: int, num_columns: int, sol_matrix: np.array) -> None:
+    """
+    Writes the solved matrix out to a file.
 
-def parse_out():
-    pass
+    :param num_rows: The number of rows in the matrix.
+    :param num_columns: The number of columns in the matrix.
+    :param sol_matrix: The solved matrix.
+    """
+    np.savetxt("./output/output.txt", sol_matrix, fmt="%s", delimiter=" ")
 
 
 # ===========================================================================================
@@ -162,9 +169,16 @@ def parse_out():
 
 
 def main():
-    N, M, matrix = parse_in("./input/input_1.txt")
-    matrix_sol = solve(N, M, matrix)
+    """
+    Driver function for program.
+    """
+    num_rows, num_columns, matrix = parse_in("./input/input_2.txt")
+    sol_matrix = solve(num_rows, num_columns, matrix)
+    parse_out(num_rows, num_columns, sol_matrix)
 
 
 if __name__ == '__main__':
+    """
+    Entry Point
+    """
     main()
